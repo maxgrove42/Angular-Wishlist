@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import { WishItem} from "../shared/models/wishItem";
 import {RouterOutlet} from "@angular/router";
 import {NgForOf, NgIf} from "@angular/common";
@@ -7,7 +7,9 @@ import { WishListComponent } from "./wish-list/wish-list.component";
 import {AddWishFormComponent} from "./add-wish-form/add-wish-form.component";
 import { WishFilterComponent} from "./wish-filter/wish-filter.component";
 import {WishListItemComponent} from "./wish-list-item/wish-list-item.component";
-import events from './../shared/services/EventService'
+import {EventService} from '../shared/services/EventService'
+import {HttpClientModule} from "@angular/common/http";
+import {WishService} from "./wish.service";
 
 @Component({
   selector: 'app-root',
@@ -21,13 +23,14 @@ import events from './../shared/services/EventService'
     WishListComponent,
     AddWishFormComponent,
     WishFilterComponent,
-    WishListItemComponent
+    WishListItemComponent,
+    HttpClientModule
   ],
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
 
-  constructor() {
+  constructor(events: EventService, private wishService: WishService) {
     events.listen('removeWish', (wish: any) => {
       //remove wish from items.
       let index = this.items.indexOf(wish);
@@ -37,11 +40,14 @@ export class AppComponent {
     })
   }
 
-  items : WishItem[] = [
-    new WishItem('Learn Angular'),
-    new WishItem('Get Coffee', true),
-    new WishItem('Find grass that cuts itself')
-  ];
+  items! : WishItem[];
 
   filter : any;
+
+  ngOnInit(): void {
+
+    this.wishService.getWishes().subscribe((data : any) => {
+      this.items = data;
+    });
+  }
 }
